@@ -10,7 +10,7 @@ class AppController {
       db: dbClient.isAlive(),
     };
     response.status(200);
-    response.send(JSON.stringify(status));
+    response.send(status);
   }
 
   // GET stats of users and files in db
@@ -22,7 +22,7 @@ class AppController {
       files: filesCount,
     };
     response.status(200);
-    response.send(JSON.stringify(stats));
+    response.send(stats);
   }
 }
 
