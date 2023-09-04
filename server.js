@@ -4,6 +4,9 @@ import router from './routes/index';
 // Create Express server
 const app = express();
 
+// Use JSON
+app.use(express.json());
+
 // Use router
 app.use('/', router);
 
