@@ -1,5 +1,7 @@
 import crypto from 'crypto';
+import { ObjectId } from 'mongodb';
 import dbClient from '../utils/db';
+import redisClient from '../utils/redis';
 
 // Create UsersController class that will handle requests to the routes
 class UsersController {
@@ -43,6 +45,36 @@ class UsersController {
       response.status(201);
       response.send({ id: _id, email });
     }
+  }
+
+  // Get user by token
+  static async getMe(request, response) {
+    // Get the authorization token
+    const token = request.header('X-Token');
+    // Check if authorization token is missing
+    if (!token) {
+      // Send error response
+      response.status(401);
+      response.send({ error: 'Unauthorized' });
+    }
+    // Get the key for the token in Redis
+    const key = `auth_${token}`;
+    // Get the value of the key in Redis which is the user id
+    // If the value exists, it means the token is valid
+    const value = await redisClient.get(key);
+    // Check if value exists
+    if (!value) {
+      // Send error response
+      response.status(401);
+      response.send({ error: 'Unauthorized' });
+    }
+    // Get the users collection from the db
+    const users = dbClient.db.collection('users');
+    // Get the user with the value as id
+    const user = await users.findOne({ _id: new ObjectId(value) });
+    // Send success response
+    response.status(200);
+    response.send({ id: user._id, email: user.email });
   }
 }
 
