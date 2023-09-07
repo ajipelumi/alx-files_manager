@@ -156,6 +156,15 @@ class FilesController {
       // Send error response
       return response.status(401).send({ error: 'Unauthorized' });
     }
+    // Get the user collection from the db
+    const users = dbClient.db.collection('users');
+    // Get the user
+    const user = await users.findOne({ _id: new ObjectId(userId) });
+    // Check if user exists
+    if (!user) {
+      // Send error response
+      return response.status(401).send({ error: 'Unauthorized' });
+    }
     // Get the file id from the request
     const { id } = request.params;
     // Check if file id is missing
@@ -198,6 +207,15 @@ class FilesController {
     const userId = await redisClient.get(key);
     // Check if the user id exists
     if (!userId) {
+      // Send error response
+      return response.status(401).send({ error: 'Unauthorized' });
+    }
+    // Get the user collection from the db
+    const users = dbClient.db.collection('users');
+    // Get the user
+    const user = await users.findOne({ _id: new ObjectId(userId) });
+    // Check if user exists
+    if (!user) {
       // Send error response
       return response.status(401).send({ error: 'Unauthorized' });
     }
