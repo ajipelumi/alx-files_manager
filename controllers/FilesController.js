@@ -161,14 +161,9 @@ class FilesController {
     // Get the files collection from the db
     const files = dbClient.db.collection('files');
     // Get the file
-    const file = await files.findOne({ _id: new ObjectId(id) });
+    const file = await files.findOne({ _id: new ObjectId(id), userId });
     // Check if file exists
     if (!file) {
-      // Send error response
-      return response.status(404).send({ error: 'Not found' });
-    }
-    // Check if file is not public and user id does not match
-    if (!file.isPublic && file.userId !== userId) {
       // Send error response
       return response.status(404).send({ error: 'Not found' });
     }
