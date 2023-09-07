@@ -2,6 +2,7 @@ import express from 'express';
 import AppController from '../controllers/AppController';
 import UsersController from '../controllers/UsersController';
 import AuthController from '../controllers/AuthController';
+import FilesController from '../controllers/FilesController';
 
 // Create router
 const router = express.Router();
@@ -23,6 +24,9 @@ router.get('/disconnect', AuthController.getDisconnect);
 
 // GET user me
 router.get('/users/me', UsersController.getMe);
+
+// POST files
+router.post('/files', FilesController.postUpload);
 
 // Export router
 export default router;
