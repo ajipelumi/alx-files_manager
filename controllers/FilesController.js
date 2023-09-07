@@ -158,6 +158,11 @@ class FilesController {
     }
     // Get the file id from the request
     const { id } = request.params;
+    // Check if file id is missing
+    if (!id) {
+      // Send error response
+      return response.status(404).send({ error: 'Not found' });
+    }
     // Get the files collection from the db
     const files = dbClient.db.collection('files');
     // Get the file
