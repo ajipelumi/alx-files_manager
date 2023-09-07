@@ -137,6 +137,106 @@ class FilesController {
       parentId,
     });
   }
+
+  // Get file from db
+  static async getShow(request, response) {
+    // Get the authorization token
+    const token = request.header('X-Token');
+    // Check if authorization token is missing
+    if (!token) {
+      // Send error response
+      return response.status(401).send({ error: 'Unauthorized' });
+    }
+    // Get the key for the token in Redis
+    const key = `auth_${token}`;
+    // Get the value of the key in Redis which is the user id
+    const userId = await redisClient.get(key);
+    // Check if the user id exists
+    if (!userId) {
+      // Send error response
+      return response.status(401).send({ error: 'Unauthorized' });
+    }
+    // Get the file id from the request
+    const { id } = request.params;
+    // Get the files collection from the db
+    const files = dbClient.db.collection('files');
+    // Get the file
+    const file = await files.findOne({ _id: new ObjectId(id) });
+    // Check if file exists
+    if (!file) {
+      // Send error response
+      return response.status(404).send({ error: 'Not found' });
+    }
+    // Check if file is not public and user id does not match
+    if (!file.isPublic && file.userId !== userId) {
+      // Send error response
+      return response.status(404).send({ error: 'Not found' });
+    }
+    // Send success response
+    return response.status(200).send({
+      id: file._id,
+      userId: file.userId,
+      name: file.name,
+      type: file.type,
+      isPublic: file.isPublic,
+      parentId: file.parentId,
+    });
+  }
+
+  // Get files from db
+  static async getIndex(request, response) {
+    // Get the authorization token
+    const token = request.header('X-Token');
+    // Check if authorization token is missing
+    if (!token) {
+      // Send error response
+      return response.status(401).send({ error: 'Unauthorized' });
+    }
+    // Get the key for the token in Redis
+    const key = `auth_${token}`;
+    // Get the value of the key in Redis which is the user id
+    const userId = await redisClient.get(key);
+    // Check if the user id exists
+    if (!userId) {
+      // Send error response
+      return response.status(401).send({ error: 'Unauthorized' });
+    }
+    // Get the parentId from the request, defaulting to 0
+    const parentId = request.query.parentId || 0;
+    // Get the page number from the request, defaulting to 0
+    const page = Number(request.query.page) || 0;
+    // Define the limit of files per page
+    const limit = 20;
+    // Calculate the skip value
+    const skip = page * limit;
+    // Get the files collection from the db
+    const files = dbClient.db.collection('files');
+    // If parentId is 0, get all files with userId
+    if (parentId === 0) {
+      // Get all files with userId and skip and limit
+      const allFiles = await files.find({ userId }).skip(skip).limit(limit).toArray();
+      // Send success response
+      return response.status(200).send(allFiles.map((file) => ({
+        id: file._id,
+        userId: file.userId,
+        name: file.name,
+        type: file.type,
+        isPublic: file.isPublic,
+        parentId: file.parentId,
+      })));
+    }
+    // Get all files with userId and parentId and skip and limit
+    const allFiles = await files.find({ userId, parentId }).skip(skip).limit(limit).toArray();
+    // Send success response
+    return response.status(200).send(allFiles.map((file) => ({
+      id: file._id,
+      userId: file.userId,
+      name: file.name,
+      type: file.type,
+      isPublic: file.isPublic,
+      parentId: file.parentId,
+    })));
+  }
 }
 
 // Export the class
